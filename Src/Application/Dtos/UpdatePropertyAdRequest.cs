@@ -1,0 +1,10 @@
+﻿namespace Application.Dtos;
+
+public class UpdatePropertyAdRequest
+{
+    public int Id { get; set; }
+    public string? Description { get; set; }
+    public decimal? Price { get; set; }
+    public int? FloorNumber { get; set; }
+    public int? TotalFloors { get; set; }
+}
