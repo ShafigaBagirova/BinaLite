@@ -16,8 +16,8 @@ public class BinaLiteDbContext: DbContext
         modelBuilder.ApplyConfiguration(new PropertyAdConfiguration());
         modelBuilder.ApplyConfiguration(new PropertyMediaConfiguration());
     }
-    DbSet<PropertyAd> PropertyAds { get; set; }
-    DbSet<PropertyMedia> PropertyMedias { get; set; }
+   public DbSet<PropertyAd> PropertyAds { get; set; }
+    public DbSet<PropertyMedia> PropertyMedias { get; set; }
 
     
 }
