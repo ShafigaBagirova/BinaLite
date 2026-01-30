@@ -12,7 +12,7 @@ public class CreatePropertyAdRequest
     public bool IsMortgage { get; set; }
     public bool IsTitleDeedAvailable { get; set; }
     public int RoomCount { get; set; }
-    public double AreaInSquareMeters { get; set; }
+    public decimal AreaInSquareMeters { get; set; }
     public string Location { get; set; }
     public int? FloorNumber { get; set; }
     public int? TotalFloors { get; set; }

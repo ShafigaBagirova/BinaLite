@@ -1,6 +1,9 @@
+using API.Middlewares;
 using Application.Abstracts.Repositories;
 using Application.Abstracts.Services;
 using Application.Mappings;
+using Application.Validations.PropertyAdValidation;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 using Persistence.Repositories;
@@ -16,6 +19,10 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
+    
+
+builder.Services.AddValidatorsFromAssemblyContaining<CreatePropertyAdValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdatePropertyAdValidator>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<BinaLiteDbContext>(options =>
@@ -36,6 +43,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
