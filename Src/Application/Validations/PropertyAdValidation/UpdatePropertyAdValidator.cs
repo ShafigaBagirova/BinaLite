@@ -1,4 +1,4 @@
-﻿using Application.Dtos;
+﻿using Application.Dtos.PropertyAdDtos;
 using FluentValidation;
 
 namespace Application.Validations.PropertyAdValidation;

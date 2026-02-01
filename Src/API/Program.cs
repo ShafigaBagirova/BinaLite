@@ -2,6 +2,8 @@ using API.Middlewares;
 using Application.Abstracts.Repositories;
 using Application.Abstracts.Services;
 using Application.Mappings;
+using Application.Validations.CityValidation;
+using Application.Validations.DistrictValidation;
 using Application.Validations.PropertyAdValidation;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -23,15 +25,22 @@ builder.Services.AddControllers()
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreatePropertyAdValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdatePropertyAdValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCityValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateCityValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateDistrictValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateDistrictValidator>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<BinaLiteDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IPropertyAdRepository, PropertyAdRepository>();
-builder.Services.AddScoped<IPropertyAdRepository, PropertyAdRepository>();
 builder.Services.AddScoped<IPropertyAdService, PropertyAdService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddScoped<ICityRepository, CityRepository>();
+builder.Services.AddScoped<ICityService, CityService>();
+builder.Services.AddScoped<IDistrictRepository, DistrictRepository>();
+builder.Services.AddScoped<IDistrictService, DistrictService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

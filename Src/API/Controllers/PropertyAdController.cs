@@ -1,6 +1,6 @@
 ﻿using Application.Abstracts.Repositories;
 using Application.Abstracts.Services;
-using Application.Dtos;
+using Application.Dtos.PropertyAdDtos;
 using Application.Shared.Helpers.Responses;
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;

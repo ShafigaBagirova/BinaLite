@@ -1,6 +1,6 @@
 ﻿using Application.Abstracts.Repositories;
 using Application.Abstracts.Services;
-using Application.Dtos;
+using Application.Dtos.PropertyAdDtos;
 using Application.Validations.PropertyAdValidation;
 using AutoMapper;
 using Domain.Entities;
