@@ -1,4 +1,4 @@
-﻿using Application.Dtos;
+﻿using Application.Dtos.PropertyAdDtos;
 
 namespace Application.Abstracts.Services;
 

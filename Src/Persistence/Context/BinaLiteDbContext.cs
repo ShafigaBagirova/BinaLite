@@ -13,11 +13,11 @@ public class BinaLiteDbContext: DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new PropertyAdConfiguration());
-        modelBuilder.ApplyConfiguration(new PropertyMediaConfiguration());
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(BinaLiteDbContext).Assembly);
     }
    public DbSet<PropertyAd> PropertyAds { get; set; }
     public DbSet<PropertyMedia> PropertyMedias { get; set; }
+    public DbSet<City> Cities { get; set; }
 
-    
+
 }
