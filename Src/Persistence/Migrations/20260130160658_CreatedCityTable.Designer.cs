@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistence.Context;
 
@@ -11,9 +12,11 @@ using Persistence.Context;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(BinaLiteDbContext))]
-    partial class BinaLiteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260130160658_CreatedCityTable")]
+    partial class CreatedCityTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,38 +50,6 @@ namespace Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("City", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.District", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CityId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CityId");
-
-                    b.HasIndex("Name", "CityId")
-                        .IsUnique();
-
-                    b.ToTable("District", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.PropertyAd", b =>
@@ -199,17 +170,6 @@ namespace Persistence.Migrations
                     b.ToTable("PropertyMedia", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.District", b =>
-                {
-                    b.HasOne("Domain.Entities.City", "City")
-                        .WithMany("Districts")
-                        .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("City");
-                });
-
             modelBuilder.Entity("Domain.Entities.PropertyMedia", b =>
                 {
                     b.HasOne("Domain.Entities.PropertyAd", "PropertyAd")
@@ -219,11 +179,6 @@ namespace Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("PropertyAd");
-                });
-
-            modelBuilder.Entity("Domain.Entities.City", b =>
-                {
-                    b.Navigation("Districts");
                 });
 
             modelBuilder.Entity("Domain.Entities.PropertyAd", b =>
