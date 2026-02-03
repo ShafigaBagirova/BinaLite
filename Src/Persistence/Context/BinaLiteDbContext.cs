@@ -18,6 +18,7 @@ public class BinaLiteDbContext: DbContext
    public DbSet<PropertyAd> PropertyAds { get; set; }
     public DbSet<PropertyMedia> PropertyMedias { get; set; }
     public DbSet<City> Cities { get; set; }
-
+    public DbSet<District> Districts { get; set; }
+    public DbSet<AppFile> Files { get; set; }
 
 }
