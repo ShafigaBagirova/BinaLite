@@ -41,9 +41,13 @@ builder.Services.AddScoped<ICityRepository, CityRepository>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<IDistrictRepository, DistrictRepository>();
 builder.Services.AddScoped<IDistrictService, DistrictService>();
-
+builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.CustomSchemaIds(t => t.FullName);
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -53,6 +57,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseMiddleware<ExceptionMiddleware>();
+
 
 app.UseHttpsRedirection();
 
