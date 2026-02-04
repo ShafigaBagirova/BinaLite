@@ -39,7 +39,7 @@ public class FileService : IFileService
                 Id = x.Id,
                 FileName = x.FileName,
                 ContentType = x.ContentType
-                // Content QAYTARMIQ
+                
             })
             .ToListAsync();
     }
