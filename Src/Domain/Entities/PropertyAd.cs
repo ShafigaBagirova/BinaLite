@@ -19,5 +19,5 @@ public class PropertyAd: BaseEntity<int>
     public int? TotalFloors { get; set; }
     public PropertyCategory PropertyCategory { get; set; }
     public OfferType OfferType { get; set; }
-    public ICollection<PropertyMedia>? Media { get; set; }
+    public ICollection<PropertyMedia> MediaItems { get; set; } = new List<PropertyMedia>();
 }

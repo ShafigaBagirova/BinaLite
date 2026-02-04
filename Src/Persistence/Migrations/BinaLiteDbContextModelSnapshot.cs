@@ -193,12 +193,7 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("MediaType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("MediaUrl")
+                    b.Property<string>("ObjectKey")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -206,7 +201,7 @@ namespace Persistence.Migrations
                     b.Property<int>("Order")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(1);
+                        .HasDefaultValue(0);
 
                     b.Property<int>("PropertyAdId")
                         .HasColumnType("int");
@@ -218,10 +213,9 @@ namespace Persistence.Migrations
 
                     b.HasIndex("PropertyAdId");
 
-                    b.HasIndex("PropertyAdId", "Order")
-                        .IsUnique();
+                    b.HasIndex("PropertyAdId", "Order");
 
-                    b.ToTable("PropertyMedia", (string)null);
+                    b.ToTable("PropertyMedias", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.District", b =>
@@ -238,7 +232,7 @@ namespace Persistence.Migrations
             modelBuilder.Entity("Domain.Entities.PropertyMedia", b =>
                 {
                     b.HasOne("Domain.Entities.PropertyAd", "PropertyAd")
-                        .WithMany("Media")
+                        .WithMany("MediaItems")
                         .HasForeignKey("PropertyAdId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -253,7 +247,7 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.PropertyAd", b =>
                 {
-                    b.Navigation("Media");
+                    b.Navigation("MediaItems");
                 });
 #pragma warning restore 612, 618
         }

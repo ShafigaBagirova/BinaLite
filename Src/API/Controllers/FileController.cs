@@ -19,7 +19,6 @@ public class FileController : ControllerBase
         return Ok(await _fileService.GetAllAsync());
     }
 
-    // DOWNLOAD
     [HttpGet("{id}")]
     public async Task<IActionResult> Download(int id)
     {

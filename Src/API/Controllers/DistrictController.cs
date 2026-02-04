@@ -22,9 +22,9 @@ public class DistrictController : ControllerBase
         var district = await _districtService.GetAllDistrictAsync(ct);
         return Ok(BaseResponse<List<GetAllDistrictResponse>>.Ok(district));
     }
-    [HttpGet("search")]
+    [HttpGet("{name}")]
     public async Task<ActionResult<BaseResponse<List<GetAllDistrictResponse>>>> GetByNameAsync(
-    [FromQuery] string name,
+    string name,
     CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(name))
