@@ -8,6 +8,9 @@ using FluentValidation;
 using Infrastructure.Services;
 using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
+using FluentValidation;
+using Infrastructure.Services;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +39,7 @@ public static class ServiceCollectionExtensions
           .AddEntityFrameworkStores<BinaLiteDbContext>()
           .AddDefaultTokenProviders();
 
+           
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
