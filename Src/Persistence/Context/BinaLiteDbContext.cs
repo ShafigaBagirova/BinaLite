@@ -1,10 +1,11 @@
 ﻿using Domain.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Configurations;
 
 namespace Persistence.Context;
 
-public class BinaLiteDbContext: DbContext
+public class BinaLiteDbContext: IdentityDbContext<User>
 {
     public BinaLiteDbContext(DbContextOptions<BinaLiteDbContext> options) : base(options)
     {
@@ -14,6 +15,7 @@ public class BinaLiteDbContext: DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BinaLiteDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
     }
    public DbSet<PropertyAd> PropertyAds { get; set; }
     public DbSet<PropertyMedia> PropertyMedias { get; set; }

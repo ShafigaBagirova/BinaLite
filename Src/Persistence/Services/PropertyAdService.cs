@@ -41,6 +41,10 @@ public class PropertyAdService : IPropertyAdService
     {
         await _createValidator.ValidateAndThrowAsync(request, cancellationToken: ct);
 
+     
+        if (media != null && media.Count > 10)
+            throw new ValidationException("Maximum 10 media allowed.");
+      
         var entity = _mapper.Map<PropertyAd>(request);
 
         await _repository.AddAsync(entity, ct);

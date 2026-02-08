@@ -3,9 +3,11 @@ using Application.Abstracts.Services;
 using Application.Validations.CityValidation;
 using Application.Validations.DistrictValidation;
 using Application.Validations.PropertyAdValidation;
+using Domain.Entities;
 using FluentValidation;
 using Infrastructure.Services;
 using Infrastructure.Extensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +27,15 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<BinaLiteDbContext>(options =>
             options.UseSqlServer(
                configuration.GetConnectionString("DefaultConnection")));
-           
+        services
+          .AddIdentity<User, IdentityRole>(options =>
+          {
+              options.Password.RequiredLength = 6;
+              options.Password.RequiredUniqueChars = 1;
+          })
+          .AddEntityFrameworkStores<BinaLiteDbContext>()
+          .AddDefaultTokenProviders();
+
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
