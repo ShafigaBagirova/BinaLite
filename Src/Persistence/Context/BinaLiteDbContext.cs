@@ -1,18 +1,19 @@
 ﻿using Domain.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Configurations;
 
 namespace Persistence.Context;
 
-public class BinaLiteDbContext: DbContext
+public class BinaLiteDbContext: IdentityDbContext<User>
 {
     public BinaLiteDbContext(DbContextOptions<BinaLiteDbContext> options) : base(options)
     {
-
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BinaLiteDbContext).Assembly);
     }
    public DbSet<PropertyAd> PropertyAds { get; set; }

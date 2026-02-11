@@ -18,14 +18,16 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Console.WriteLine(ex);
+
             if (context.Response.HasStarted) throw;
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-            var response = BaseResponse.Fail("Unexpected error");
+            var response = BaseResponse.Fail(ex.Message);
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
     }

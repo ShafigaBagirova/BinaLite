@@ -7,4 +7,6 @@ public class UpdatePropertyAdRequest
     public decimal? Price { get; set; }
     public int? FloorNumber { get; set; }
     public int? TotalFloors { get; set; }
+    public int[]? RemoveMediaIds { get; set; }
+    public List<MediaUploadInput>? AddMedia { get; set; }
 }

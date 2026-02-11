@@ -9,6 +9,6 @@ namespace Application.Dtos.DistrictDtos;
 public class UpdateDistrictRequest
 {
     public int Id { get; set; }
-    public string Name { get; set; } 
+    public string Name { get; set; } = null!;
     public int CityId { get; set; }
 }
