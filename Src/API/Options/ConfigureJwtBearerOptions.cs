@@ -6,7 +6,7 @@ using System.Text;
 
 namespace API.Options;
 
-public class ConfigureJwtBearerOptions  : IConfigureOptions<JwtBearerOptions>
+public class ConfigureJwtBearerOptions  : IConfigureNamedOptions<JwtBearerOptions>
 {
     private readonly JwtOptions _jwtOptions;
 
@@ -14,9 +14,17 @@ public class ConfigureJwtBearerOptions  : IConfigureOptions<JwtBearerOptions>
     {
         _jwtOptions = jwtOptions.Value;
     }
+    public void Configure(string? name, JwtBearerOptions options)
+    {
+        Configure(options);
+    }
 
     public void Configure(JwtBearerOptions options)
     {
+        if (string.IsNullOrWhiteSpace(_jwtOptions.Secret))
+      
+        throw new InvalidOperationException("JWT Secret is missing in configuration section 'Jwt'.");
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -28,8 +36,13 @@ public class ConfigureJwtBearerOptions  : IConfigureOptions<JwtBearerOptions>
             ValidAudience = _jwtOptions.Audience,
 
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_jwtOptions.Secret))
+                Encoding.UTF8.GetBytes(_jwtOptions.Secret)),
+            ClockSkew = TimeSpan.Zero
         };
     }
+    
+
+    
 }
+
 

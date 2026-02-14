@@ -2,6 +2,8 @@
 using Application.Dtos.CityDtos;
 using Application.Dtos.DistrictDtos;
 using Application.Shared.Helpers.Responses;
+using Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Persistence.Services;
 
@@ -16,12 +18,14 @@ public class DistrictController : ControllerBase
     {
         _districtService = districtService;
     }
+
     [HttpGet]
     public async Task<ActionResult<BaseResponse<List<GetAllDistrictResponse>>>> GetAllAsync(CancellationToken ct)
     {
         var district = await _districtService.GetAllDistrictAsync(ct);
         return Ok(BaseResponse<List<GetAllDistrictResponse>>.Ok(district));
     }
+
     [HttpGet("{name}")]
     public async Task<ActionResult<BaseResponse<List<GetAllDistrictResponse>>>> GetByNameAsync(
     string name,
@@ -34,6 +38,8 @@ public class DistrictController : ControllerBase
 
         return Ok(BaseResponse<List<GetAllDistrictResponse>>.Ok(cities));
     }
+
+    [Authorize(Policy = Policies.ManageCities)]
     [HttpPost]
     public async Task<ActionResult<BaseResponse>> CreateAsync([FromBody] CreateDistrictRequest request,
         CancellationToken ct)
@@ -45,6 +51,8 @@ public class DistrictController : ControllerBase
 
         return StatusCode(StatusCodes.Status201Created, BaseResponse.Ok("Created successfully"));
     }
+
+    [Authorize(Policy = Policies.ManageCities)]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<BaseResponse>> UpdateAsync(int id, [FromBody] 
     UpdateDistrictRequest request, CancellationToken ct)
@@ -65,6 +73,8 @@ public class DistrictController : ControllerBase
             }
         }
     }
+
+    [Authorize(Policy = Policies.ManageCities)]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<BaseResponse>> DeleteAsync(int id, CancellationToken ct)
     {
@@ -75,6 +85,7 @@ public class DistrictController : ControllerBase
 
         return Ok(BaseResponse.Ok("Deleted successfully"));
     }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<BaseResponse<GetAllDistrictResponse>>> GetByIdAsync(int id, 
         CancellationToken ct)

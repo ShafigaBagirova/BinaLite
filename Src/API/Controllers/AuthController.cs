@@ -32,8 +32,7 @@ public class AuthController : ControllerBase
                 BaseResponse.Fail(
                     message: "Register failed",
                     errors: error is not null
-                        ? new List<string> { error }
-                        : null
+                        ? new List<string> { error }  : null
                 )
             );
         }
@@ -41,27 +40,35 @@ public class AuthController : ControllerBase
         return Ok(BaseResponse.Ok("User registered successfully"));
     }
 
-    // POST: /api/Auth/login
     [HttpPost("login")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login(
+    public async Task<ActionResult<BaseResponse<TokenResponse>>> Login(
         [FromBody] LoginRequest request,
         CancellationToken ct)
     {
-        var token = await _authService.LoginAsync(request, ct);
+        var result = await _authService.LoginAsync(request, ct);
+        if (result is null)
+            return Unauthorized(BaseResponse<TokenResponse>.Fail("Invalid username or password"));
+        return Ok(BaseResponse<TokenResponse>.Ok(result));
 
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return Unauthorized(
-                BaseResponse<string>.Fail("Invalid login or password.")
-            );
-        }
+    }
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    public async Task<ActionResult<BaseResponse<TokenResponse>>> Refresh(
+        [FromBody] RefreshTokenRequest request,
+        CancellationToken ct)
+    {
+        if (request is null || string.IsNullOrWhiteSpace(request.RefreshToken))
+            return BadRequest(
+                BaseResponse<TokenResponse>.Fail("RefreshToken is required."));
 
-        return Ok(
-            BaseResponse<string>.Ok(
-                data: token,
-                message: "Login successful"
-            )
-        );
+
+        var result = await _authService.RefreshTokenAsync(request.RefreshToken, ct);
+        if (result is null)
+             return Unauthorized(
+        BaseResponse<TokenResponse>.Fail("Invalid or expired refresh token")
+    );
+
+        return Ok(BaseResponse<TokenResponse>.Ok(result));
     }
 }
