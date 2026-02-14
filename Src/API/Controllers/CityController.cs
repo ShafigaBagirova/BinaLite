@@ -2,6 +2,9 @@
 using Application.Dtos.CityDtos;
 using Application.Dtos.PropertyAdDtos;
 using Application.Shared.Helpers.Responses;
+using Domain.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Persistence.Services;
 
@@ -40,6 +43,9 @@ public class CityController : ControllerBase
 
         return Ok(BaseResponse<List<GetAllCitiesResponse>>.Ok(cities));
     }
+
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Policy =Policies.ManageCities)]
     [HttpPost]
     public async Task<ActionResult<BaseResponse>> CreateAsync([FromBody] CreateCityRequest request, CancellationToken ct)
     {
@@ -50,6 +56,8 @@ public class CityController : ControllerBase
 
         return StatusCode(StatusCodes.Status201Created, BaseResponse.Ok("Created successfully"));
     }
+
+    [Authorize(Policy = Policies.ManageCities)]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<BaseResponse>> UpdateAsync(int id, [FromBody] UpdateCityRequest request, CancellationToken ct)
     {
@@ -70,6 +78,7 @@ public class CityController : ControllerBase
         }
     }
 
+    [Authorize(Policy = Policies.ManageCities)]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<BaseResponse>> DeleteAsync(int id, CancellationToken ct)
     {

@@ -4,7 +4,9 @@ using Application.Abstracts.Services;
 using Application.Dtos.PropertyAdDtos;
 using Application.Shared.Helpers.Responses;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Persistence.Repositories;
 
@@ -44,6 +46,7 @@ public class PropertyAdController : ControllerBase
             return NotFound(BaseResponse<GetByIdPropertyAdResponse>.Fail("PropertyAd not found"));
         return Ok(BaseResponse<GetByIdPropertyAdResponse>.Ok(propertyAd));
     }
+    [Authorize(Policy =Policies.ManageProperties)]
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<BaseResponse>> Create(
@@ -80,7 +83,7 @@ public class PropertyAdController : ControllerBase
                     i.Content.Dispose();
         }
     }
-
+    [Authorize(Policy =Policies.ManageProperties)]
     [HttpPut("{id:int}")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<BaseResponse>> Update(
@@ -120,6 +123,7 @@ public class PropertyAdController : ControllerBase
         }
     }
 
+    [Authorize(Policy =Policies.ManageProperties)]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<BaseResponse>> DeleteAsync(int id, CancellationToken ct)
     {
@@ -140,6 +144,7 @@ public class PropertyAdController : ControllerBase
         return Ok(BaseResponse<List<PropertyAdMediaItemDto>>.Ok(dto));
     }
 
+    [Authorize(Policy =Policies.ManageProperties)]
     [HttpDelete("media/{id:int}")]
     public async Task<ActionResult<BaseResponse>> DeleteMedia(int id, CancellationToken ct)
     {

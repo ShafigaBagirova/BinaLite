@@ -17,10 +17,11 @@ public class BinaLiteDbContext: IdentityDbContext<User>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BinaLiteDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }
-   public DbSet<PropertyAd> PropertyAds { get; set; }
+    public DbSet<PropertyAd> PropertyAds { get; set; }
     public DbSet<PropertyMedia> PropertyMedias { get; set; }
     public DbSet<City> Cities { get; set; }
     public DbSet<District> Districts { get; set; }
     public DbSet<AppFile> Files { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
 }
