@@ -43,12 +43,7 @@ public class PropertyAdController : ControllerBase
     [HttpGet("my")]
     public async Task<ActionResult<BaseResponse<List<GetAllPropertyAdResponse>>>> GetMy(CancellationToken ct)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-            return Unauthorized(BaseResponse<List<GetAllPropertyAdResponse>>.Fail("Invalid user id"));
-
-        var result = await _propertyAdService.GetMyAsync(userId, ct);
-
+        var result = await _propertyAdService.GetMyAsync(ct);
         return Ok(BaseResponse<List<GetAllPropertyAdResponse>>.Ok(result));
     }
     [HttpGet("{id:int}")]
@@ -66,14 +61,10 @@ public class PropertyAdController : ControllerBase
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<BaseResponse>> Create(
-       [FromForm] CreatePropertyAdRequest request,
-       [FromForm] IFormFileCollection? media,
-       CancellationToken ct)
+        [FromForm] CreatePropertyAdRequest request,
+        [FromForm] IFormFileCollection? media,
+        CancellationToken ct)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-            return Unauthorized(BaseResponse.Fail("Invalid user id"));
-
         List<MediaUploadInput>? inputs = null;
 
         try
@@ -89,7 +80,7 @@ public class PropertyAdController : ControllerBase
                 }).ToList();
             }
 
-            var ok = await _propertyAdService.CreatePropertyAdAsync(userId, request, inputs, ct);
+            var ok = await _propertyAdService.CreatePropertyAdAsync(request, inputs, ct);
 
             if (!ok)
                 return BadRequest(BaseResponse.Fail("Create failed"));
@@ -103,6 +94,7 @@ public class PropertyAdController : ControllerBase
                     i.Content.Dispose();
         }
     }
+
     [Authorize(Policy = Policies.ManageProperties)]
     [HttpPut("{id:int}")]
     [Consumes("multipart/form-data")]
@@ -113,10 +105,6 @@ public class PropertyAdController : ControllerBase
         [FromForm] int[]? removeMediaIds,
         CancellationToken ct)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-            return Unauthorized(BaseResponse.Fail("Invalid user id"));
-
         List<MediaUploadInput>? inputs = null;
 
         try
@@ -133,7 +121,7 @@ public class PropertyAdController : ControllerBase
             }
 
             var ok = await _propertyAdService.UpdatePropertyAdAsync(
-                id,userId, request, inputs, removeMediaIds, ct);
+                id, request, inputs, removeMediaIds, ct);
 
             if (!ok)
                 return NotFound(BaseResponse.Fail("PropertyAd not found or not allowed"));
@@ -147,15 +135,12 @@ public class PropertyAdController : ControllerBase
                     i.Content.Dispose();
         }
     }
+
     [Authorize(Policy = Policies.ManageProperties)]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<BaseResponse>> DeleteAsync(int id, CancellationToken ct)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-            return Unauthorized(BaseResponse.Fail("Invalid user id"));
-
-        var ok = await _propertyAdService.DeletePropertyAdAsync(id, userId, ct);
+        var ok = await _propertyAdService.DeletePropertyAdAsync(id, ct);
 
         if (!ok)
             return NotFound(BaseResponse.Fail("PropertyAd not found or not allowed"));
