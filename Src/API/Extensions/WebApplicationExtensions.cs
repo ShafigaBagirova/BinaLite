@@ -34,13 +34,14 @@ public static class WebApplicationExtensions
         }
 
 
-        app.UseExceptionHandling();
+       // app.UseExceptionHandling();
         app.UseStaticFiles();
 
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.UseDeveloperExceptionPage();
         }
 
         app.UseHttpsRedirection();

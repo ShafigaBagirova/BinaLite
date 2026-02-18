@@ -54,6 +54,15 @@ public class PropertyAdConfiguration : IEntityTypeConfiguration<PropertyAd>
         builder.Property(x => x.OfferType)
             .IsRequired()
             .HasConversion<int>();
+        builder.Property(x => x.Status)
+            .IsRequired()
+            .HasConversion<int>();
+        builder.Property(x => x.RejectionReason)
+            .HasMaxLength(1000);
+        builder.HasOne(x => x.User)
+            .WithMany(u=>u.PropertyAds)
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(x => x.OfferType);
         builder.HasIndex(x => x.PropertyCategory);
