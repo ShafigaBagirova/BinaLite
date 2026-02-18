@@ -17,6 +17,10 @@ public class PropertyAd: BaseEntity<int>
     public string Location { get; set; }
     public int? FloorNumber { get; set; }
     public int? TotalFloors { get; set; }
+    public string UserId { get; set; }
+    public User User { get; set; }
+    public PropertyStatus Status { get; set; } = PropertyStatus.Pending;
+    public string? RejectionReason { get; set; }
     public PropertyCategory PropertyCategory { get; set; }
     public OfferType OfferType { get; set; }
     public ICollection<PropertyMedia> MediaItems { get; set; } = new List<PropertyMedia>();

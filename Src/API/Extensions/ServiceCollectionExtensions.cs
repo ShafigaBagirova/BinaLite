@@ -9,25 +9,16 @@ using Application.Validations.PropertyAdValidation;
 using Domain.Constants;
 using Domain.Entities;
 using FluentValidation;
-using FluentValidation;
 using Infrastructure.Extensions;
-using Infrastructure.Extensions;
-using Infrastructure.Extensions;
-using Infrastructure.Services;
-using Infrastructure.Services;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Persistence.Context;
 using Persistence.Repositories;
 using Persistence.Services;
-using System.Net;
-using System.Text;
 
 
 namespace API.Extensions;
@@ -95,6 +86,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDistrictRepository, DistrictRepository>();
         services.AddScoped<IPropertyMediaRepository, PropertyMediaRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        
 
 
         services.AddScoped<IPropertyAdService, PropertyAdService>();
@@ -102,8 +94,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDistrictService, DistrictService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
-     
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IEmailService, SmtpEmailService>();
 
         services
             .AddIdentity<User, IdentityRole>(opt =>
@@ -119,8 +111,6 @@ public static class ServiceCollectionExtensions
             .AddEntityFrameworkStores<BinaLiteDbContext>()
             .AddDefaultTokenProviders();
 
-        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
-
         services.AddAuthorization();
 
 
@@ -135,28 +125,12 @@ public static class ServiceCollectionExtensions
             ?? throw new InvalidOperationException("JwtOptions could not be bound from configuration.");
 
         services
-     .AddAuthentication(options =>
-     {
-         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-     })
-     .AddJwtBearer(options =>
-     {
-         options.TokenValidationParameters = new TokenValidationParameters
-         {
-             ValidateIssuer = true,
-             ValidateAudience = true,
-             ValidateLifetime = true,
-             ValidateIssuerSigningKey = true,
-
-             ValidIssuer = jwtOptions.Issuer,
-             ValidAudience = jwtOptions.Audience,
-             IssuerSigningKey = new SymmetricSecurityKey(
-                 Encoding.UTF8.GetBytes(jwtOptions.Secret)),
-
-             ClockSkew = TimeSpan.Zero
-         };
-     });
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer();
         services.ConfigureApplicationCookie(options =>
         {
             options.Events = new CookieAuthenticationEvents
@@ -180,13 +154,19 @@ public static class ServiceCollectionExtensions
 
             options.AddPolicy(Policies.ManageProperties, policy =>
                 policy.RequireAuthenticatedUser());
+            options.AddPolicy(Policies.ModerateProperties, p => p.RequireRole(RoleNames.Admin));
         });
 
 
         services.ConfigureOptions<ConfigureJwtBearerOptions>();
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
-      
+        services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<IPropertyAdService, PropertyAdService>();
+        services.AddScoped<IPropertyModerationService, PropertyModerationService>();
+
         return services;
     }
 }

@@ -1,4 +1,4 @@
-﻿using Application.Abstracts.Repositories;
+﻿using Application.Abstracts.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;

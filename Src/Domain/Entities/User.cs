@@ -8,4 +8,5 @@ public class User:IdentityUser
 {
     public string FullName { get; set; }
     public ICollection<RefreshToken> RefreshTokens { get; set; }
+    public ICollection<PropertyAd> PropertyAds { get; set; }
 }
