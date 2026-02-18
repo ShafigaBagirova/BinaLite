@@ -1,5 +1,6 @@
 ﻿using Application.Abstracts.Repositories;
 using Domain.Entities;
+using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 
@@ -39,7 +40,7 @@ public class PropertyAdRepository : GenericRepository<PropertyAd, int>,IProperty
     public async Task<List<PropertyAd>> GetPendingAsync(CancellationToken ct = default)
     {
         return await _context.PropertyAds
-            .Where(x => x.Status == Domain.Enums.PropertyStatus.Pending)
+            .Where(x => x.Status == PropertyStatus.Pending)
             .ToListAsync(ct);
     }
     public async Task<List<PropertyAd>> GetByOwnerWithMediaAsync(string UserId, CancellationToken ct = default)
