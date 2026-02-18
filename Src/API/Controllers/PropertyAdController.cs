@@ -6,9 +6,11 @@ using Application.Shared.Helpers.Responses;
 using AutoMapper;
 using Domain.Constants;
 using Domain.Entities;
+using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Persistence.Repositories;
+using System.Security.Claims;
 
 namespace API.Controllers;
 
@@ -37,23 +39,41 @@ public class PropertyAdController : ControllerBase
         var propertyAds = await _propertyAdService.GetAllAsync(ct);
         return Ok(BaseResponse<List<GetAllPropertyAdResponse>>.Ok(propertyAds));
     }
+    [Authorize]
+    [HttpGet("my")]
+    public async Task<ActionResult<BaseResponse<List<GetAllPropertyAdResponse>>>> GetMy(CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized(BaseResponse<List<GetAllPropertyAdResponse>>.Fail("Invalid user id"));
 
+        var result = await _propertyAdService.GetMyAsync(userId, ct);
+
+        return Ok(BaseResponse<List<GetAllPropertyAdResponse>>.Ok(result));
+    }
     [HttpGet("{id:int}")]
     public async Task<ActionResult<BaseResponse<GetByIdPropertyAdResponse>>> GetByIdAsync(int id, CancellationToken ct)
     {
         var propertyAd = await _propertyAdService.GetByIdAsync(id, ct);
-         if(propertyAd is null)
-            return NotFound(BaseResponse<GetByIdPropertyAdResponse>.Fail("PropertyAd not found"));
-        return Ok(BaseResponse<GetByIdPropertyAdResponse>.Ok(propertyAd));
+
+    if (propertyAd is null)
+        return NotFound(BaseResponse<GetByIdPropertyAdResponse>.Fail("PropertyAd not found"));
+
+    return Ok(BaseResponse<GetByIdPropertyAdResponse>.Ok(propertyAd));
     }
-    [Authorize(Policy =Policies.ManageProperties)]
+
+    [Authorize(Policy = Policies.ManageProperties)]
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<BaseResponse>> Create(
-    [FromForm] CreatePropertyAdRequest request,
-    [FromForm] IFormFileCollection? media,
-    CancellationToken ct)
+       [FromForm] CreatePropertyAdRequest request,
+       [FromForm] IFormFileCollection? media,
+       CancellationToken ct)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized(BaseResponse.Fail("Invalid user id"));
+
         List<MediaUploadInput>? inputs = null;
 
         try
@@ -69,7 +89,7 @@ public class PropertyAdController : ControllerBase
                 }).ToList();
             }
 
-            var ok = await _propertyAdService.CreatePropertyAdAsync(request, inputs, ct);
+            var ok = await _propertyAdService.CreatePropertyAdAsync(userId, request, inputs, ct);
 
             if (!ok)
                 return BadRequest(BaseResponse.Fail("Create failed"));
@@ -83,7 +103,7 @@ public class PropertyAdController : ControllerBase
                     i.Content.Dispose();
         }
     }
-    [Authorize(Policy =Policies.ManageProperties)]
+    [Authorize(Policy = Policies.ManageProperties)]
     [HttpPut("{id:int}")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<BaseResponse>> Update(
@@ -93,6 +113,10 @@ public class PropertyAdController : ControllerBase
         [FromForm] int[]? removeMediaIds,
         CancellationToken ct)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized(BaseResponse.Fail("Invalid user id"));
+
         List<MediaUploadInput>? inputs = null;
 
         try
@@ -108,10 +132,11 @@ public class PropertyAdController : ControllerBase
                 }).ToList();
             }
 
-            var ok = await _propertyAdService.UpdatePropertyAdAsync(id, request, inputs, removeMediaIds, ct);
+            var ok = await _propertyAdService.UpdatePropertyAdAsync(
+                id,userId, request, inputs, removeMediaIds, ct);
 
             if (!ok)
-                return NotFound(BaseResponse.Fail("PropertyAd not found"));
+                return NotFound(BaseResponse.Fail("PropertyAd not found or not allowed"));
 
             return Ok(BaseResponse.Ok("Updated successfully"));
         }
@@ -122,18 +147,22 @@ public class PropertyAdController : ControllerBase
                     i.Content.Dispose();
         }
     }
-
-    [Authorize(Policy =Policies.ManageProperties)]
+    [Authorize(Policy = Policies.ManageProperties)]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<BaseResponse>> DeleteAsync(int id, CancellationToken ct)
     {
-        var ok = await _propertyAdService.DeletePropertyAdAsync(id, ct);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized(BaseResponse.Fail("Invalid user id"));
+
+        var ok = await _propertyAdService.DeletePropertyAdAsync(id, userId, ct);
 
         if (!ok)
-            return NotFound(BaseResponse.Fail("PropertyAd not found"));
+            return NotFound(BaseResponse.Fail("PropertyAd not found or not allowed"));
 
         return Ok(BaseResponse.Ok("Deleted successfully"));
     }
+
 
     [HttpGet("{propertyId:int}/media")]
     public async Task<ActionResult<BaseResponse<List<PropertyAdMediaItemDto>>>> GetMedia(int propertyId, CancellationToken ct)

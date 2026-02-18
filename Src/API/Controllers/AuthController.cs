@@ -16,8 +16,24 @@ public class AuthController : ControllerBase
     {
         _authService = authService;
     }
+    [HttpGet("confirm-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmEmail(
+       [FromQuery] string? userId,
+       [FromQuery] string? token,
+       CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+            return BadRequest("userId and token are required.");
 
-    // POST: /api/Auth/register
+        var success = await _authService.ConfirmEmailAsync(userId, token, ct);
+
+        if (!success)
+            return BadRequest("Token is invalid or expired.");
+
+        return Ok("Email confirmed.");
+    }
+
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<IActionResult> Register(
@@ -47,9 +63,16 @@ public class AuthController : ControllerBase
         CancellationToken ct)
     {
         var result = await _authService.LoginAsync(request, ct);
-        if (result is null)
-            return Unauthorized(BaseResponse<TokenResponse>.Fail("Invalid username or password"));
-        return Ok(BaseResponse<TokenResponse>.Ok(result));
+
+        if (!result.Success)
+        {
+            if (result.Message == "EmailNotConfirmed")
+                return StatusCode(403, BaseResponse.Fail("Email is not confirmed. Please confirm your email."));
+
+            return Unauthorized(BaseResponse.Fail(result.Message ?? "Invalid username or password"));
+        }
+
+        return Ok(result);
 
     }
     [HttpPost("refresh")]

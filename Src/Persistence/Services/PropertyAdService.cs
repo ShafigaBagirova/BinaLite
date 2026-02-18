@@ -1,12 +1,18 @@
 ﻿using Application.Abstracts.Repositories;
 using Application.Abstracts.Services;
 using Application.Dtos.PropertyAdDtos;
+using Application.Options;
 using Application.Validations.PropertyAdValidation;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Entities;
+using Domain.Enums;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Persistence.Repositories;
 using System.Linq;
+using System.Security.Claims;
 
 namespace Persistence.Services;
 
@@ -18,6 +24,9 @@ public class PropertyAdService : IPropertyAdService
     private readonly IValidator<UpdatePropertyAdRequest> _updateValidator;
     private readonly IFileStorageService _fileStorage;
     private readonly IPropertyMediaRepository _mediaRepository;
+    private readonly IEmailService _email;
+    private readonly EmailOptions _emailOptions;
+    private readonly IHttpContextAccessor _http;
 
     public PropertyAdService(
      IPropertyAdRepository repository,
@@ -25,7 +34,8 @@ public class PropertyAdService : IPropertyAdService
      IFileStorageService fileStorage,
      IMapper mapper,
      IValidator<CreatePropertyAdRequest> createvalidator,
-     IValidator<UpdatePropertyAdRequest> updatevalidator)
+     IValidator<UpdatePropertyAdRequest> updatevalidator,IEmailService emailService,
+    IOptions<EmailOptions> emailOptions, IHttpContextAccessor http)
     {
         _repository = repository;
         _mediaRepository = mediaRepository;
@@ -33,19 +43,36 @@ public class PropertyAdService : IPropertyAdService
         _mapper = mapper;
         _createValidator = createvalidator;
         _updateValidator = updatevalidator;
+        _email = emailService;
+        _emailOptions = emailOptions.Value;
+        _http = http;
     }
-    public async Task<bool> CreatePropertyAdAsync(
+    private (string? userId, bool isAdmin) CurrentUser()
+    {
+        var user = _http.HttpContext?.User;
+        if (user is null) return (null, false);
+
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = user.IsInRole(RoleNames.Admin);
+
+        return (userId, isAdmin);
+    }
+
+    public async Task<bool> CreatePropertyAdAsync(string UserId,
      CreatePropertyAdRequest request,
      List<MediaUploadInput>? media,
      CancellationToken ct = default)
     {
         await _createValidator.ValidateAndThrowAsync(request, cancellationToken: ct);
 
-     
         if (media != null && media.Count > 10)
             throw new ValidationException("Maximum 10 media allowed.");
-      
+
         var entity = _mapper.Map<PropertyAd>(request);
+
+        entity.UserId = UserId;
+        entity.Status = PropertyStatus.Pending;
+        entity.RejectionReason = null;
 
         await _repository.AddAsync(entity, ct);
         await _repository.SaveChangesAsync(ct);
@@ -78,10 +105,13 @@ public class PropertyAdService : IPropertyAdService
         return true;
     }
 
-    public async Task<bool> DeletePropertyAdAsync(int id, CancellationToken ct = default)
+    public async Task<bool> DeletePropertyAdAsync(int id, string UserId, CancellationToken ct = default)
     {
         var entity = await _repository.GetByIdAsync(id, ct);
         if (entity == null)
+            return false;
+
+        if (entity.UserId != UserId)
             return false;
 
         var mediaList = await _mediaRepository.GetByPropertyAdIdAsync(id, ct);
@@ -98,17 +128,33 @@ public class PropertyAdService : IPropertyAdService
     public async Task<List<GetAllPropertyAdResponse>> GetAllAsync(CancellationToken ct = default)
     {
         var entities = await _repository.GetAllWithMediaAsync(ct);
+
+        entities = entities
+            .Where(x => x.Status == PropertyStatus.Approved)
+            .ToList();
+
         return _mapper.Map<List<GetAllPropertyAdResponse>>(entities);
     }
 
     public async Task<GetByIdPropertyAdResponse?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         var entity = await _repository.GetByIdWithMediaAsync(id, ct);
-        return entity is null ? null : _mapper.Map<GetByIdPropertyAdResponse>(entity);
+        if (entity is null) return null;
+
+        if (entity.Status == PropertyStatus.Approved)
+            return _mapper.Map<GetByIdPropertyAdResponse>(entity);
+
+        var (userId, isAdmin) = CurrentUser();
+        if (isAdmin) return _mapper.Map<GetByIdPropertyAdResponse>(entity);
+
+        if (!string.IsNullOrWhiteSpace(userId) &&
+            string.Equals(entity.UserId, userId, StringComparison.Ordinal))
+            return _mapper.Map<GetByIdPropertyAdResponse>(entity);
+
+        return null;
     }
 
-    public async Task<bool> UpdatePropertyAdAsync(
-     int id,
+    public async Task<bool> UpdatePropertyAdAsync( int id,string UserId,
      UpdatePropertyAdRequest request,
      List<MediaUploadInput>? addMedia,
      int[]? removeMediaIds,
@@ -120,19 +166,24 @@ public class PropertyAdService : IPropertyAdService
             return false;
 
         var entity = await _repository.GetByIdAsync(id, ct);
-        if (entity == null)
+        if (entity is null)
+            return false;
+
+        if (!string.Equals(entity.UserId, UserId, StringComparison.Ordinal))
             return false;
 
         _mapper.Map(request, entity);
+
         await _repository.SaveChangesAsync(ct);
 
-        if (removeMediaIds != null && removeMediaIds.Length > 0)
+        if (removeMediaIds is { Length: > 0 })
         {
             foreach (var mediaId in removeMediaIds.Distinct())
             {
                 var m = await _mediaRepository.GetByIdAsync(mediaId, ct);
-                if (m == null) continue;
-                if (m.PropertyAdId != id) continue; // başqa elanın mediası ola bilər
+                if (m is null) continue;
+
+                if (m.PropertyAdId != id) continue;
 
                 await _fileStorage.DeleteFileAsync(m.ObjectKey, ct);
                 await _mediaRepository.DeleteAsync(m, ct);
@@ -141,7 +192,7 @@ public class PropertyAdService : IPropertyAdService
             await _mediaRepository.SaveChangesAsync(ct);
         }
 
-        if (addMedia != null && addMedia.Count > 0)
+        if (addMedia is { Count: > 0 })
         {
             var existing = await _mediaRepository.GetByPropertyAdIdAsync(id, ct);
             var order = existing.Count == 0 ? 1 : existing.Max(x => x.Order) + 1;
@@ -169,6 +220,14 @@ public class PropertyAdService : IPropertyAdService
         }
 
         return true;
+    }
+    public async Task<List<GetAllPropertyAdResponse>> GetMyAsync(
+    string userId,
+    CancellationToken ct = default)
+    {
+        var entities = await _repository.GetByOwnerWithMediaAsync(userId, ct);
+
+        return _mapper.Map<List<GetAllPropertyAdResponse>>(entities);
     }
 
 }
